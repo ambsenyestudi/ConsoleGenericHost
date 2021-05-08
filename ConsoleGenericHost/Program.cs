@@ -1,6 +1,8 @@
-﻿using ConsoleGenericHost.Hosting;
+﻿using ConsoleGenericHost.CountDown;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using System.IO;
 
 namespace ConsoleGenericHost
 {
@@ -13,10 +15,18 @@ namespace ConsoleGenericHost
 
         public static IHostBuilder CreateHostBuilder(string[] args) =>
             Host.CreateDefaultBuilder(args)
-            .ConfigureHostConfiguration(configHost => configHost.UseDefaultConfiguration())
+            .UseContentRoot(Directory.GetCurrentDirectory())
+            .ConfigureLogging(logging =>
+            {
+                // Add any 3rd party loggers like NLog or Serilog
+            })
             .ConfigureServices((hostContext, services) =>
             {
-                services.AddConsoleGenericHostServices();
+                services
+                .AddHostedService<Worker>()
+                .AddSingleton<ICountdownService, CountdownService>();
+
+                services.AddOptions<CountdownSettings>().Bind(hostContext.Configuration.GetSection(nameof(CountdownSettings)));
             });
 
     }

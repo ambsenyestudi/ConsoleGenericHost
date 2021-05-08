@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Hosting;
+﻿using ConsoleGenericHost.CountDown;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
@@ -12,40 +13,65 @@ namespace ConsoleGenericHost
     public class Worker : IHostedService
     {
         private readonly ILogger logger;
-        public Worker(ILogger<Worker> logger,
-            IHostApplicationLifetime appLifetime)
-        {
-            this.logger = logger;
+    private readonly IHostApplicationLifetime appLifetime;
+    private readonly ICountdownService countdownService;
 
-            appLifetime.ApplicationStarted.Register(OnStarted);
-            appLifetime.ApplicationStopping.Register(OnStopping);
-            appLifetime.ApplicationStopped.Register(OnStopped);
-        }
-        public Task StartAsync(CancellationToken cancellationToken)
-        {
-            logger.LogInformation("Warming up");
-            return Task.CompletedTask;
-        }
+    private int? _exitCode;
 
-        public Task StopAsync(CancellationToken cancellationToken)
-        {
-            logger.LogInformation("Shutting down");
-            return Task.CompletedTask;
-
-        }
-        private void OnStarted()
-        {
-            logger.LogInformation("2. OnStarted has been called.");
-        }
-
-        private void OnStopping()
-        {
-            logger.LogInformation("3. OnStopping has been called.");
-        }
-
-        private void OnStopped()
-        {
-            logger.LogInformation("5. OnStopped has been called.");
-        }
+    public Worker(
+        ILogger<Worker> logger,
+        IHostApplicationLifetime appLifetime,
+        ICountdownService countdownService)
+    {
+        this.logger = logger;
+        this.appLifetime = appLifetime;
+        this.countdownService = countdownService;
     }
+
+    public Task StartAsync(CancellationToken cancellationToken)
+    {
+        logger.LogDebug($"Starting with arguments: {string.Join(" ", Environment.GetCommandLineArgs())}");
+
+        appLifetime.ApplicationStarted.Register(() =>
+        {
+            Task.Run(async () =>
+            {
+                try
+                {
+                    IReadOnlyList<int> countdownList = await countdownService.GenerateCountdownAsync();
+                    for (int i = 0; i < countdownList.Count; i++)
+                    {
+                        var currentNumber = countdownList[i];
+                        
+                        logger.LogInformation($"{currentNumber} seconds reminder");
+                        await Task.Delay(1000);
+                    }
+
+                    _exitCode = 0;
+                }
+                catch (Exception ex)
+                {
+                    logger.LogError(ex, "Unhandled exception!");
+                    _exitCode = 1;
+                }
+                finally
+                {
+                    // Stop the application once the work is done
+                    appLifetime.StopApplication();
+                }
+            });
+        });
+
+        return Task.CompletedTask;
+    }
+
+    public Task StopAsync(CancellationToken cancellationToken)
+    {
+        logger.LogDebug($"Exiting with return code: {_exitCode}");
+
+        // Exit code may be null if the user cancelled via Ctrl+C/SIGTERM
+        Environment.ExitCode = _exitCode.GetValueOrDefault(-1);
+        return Task.CompletedTask;
+    }
+}
 }
