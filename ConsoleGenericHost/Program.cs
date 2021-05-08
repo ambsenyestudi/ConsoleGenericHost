@@ -13,15 +13,11 @@ namespace ConsoleGenericHost
 
         public static IHostBuilder CreateHostBuilder(string[] args) =>
             Host.CreateDefaultBuilder(args)
-                .ConfigureServices((hostContext, services) =>
-                {
-                    services.AddHostedService<Worker>();
-                })
-                .ConfigureHostConfiguration( configHost => configHost.UseDefaultConfiguration());
-    
-                /*
-                .UseStartup<Startup>();
-                */
+            .ConfigureHostConfiguration(configHost => configHost.UseDefaultConfiguration())
+            .ConfigureServices((hostContext, services) =>
+            {
+                services.AddConsoleGenericHostServices();
+            });
 
     }
 }
