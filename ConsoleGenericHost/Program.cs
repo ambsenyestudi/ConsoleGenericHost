@@ -1,7 +1,11 @@
 ﻿using ConsoleGenericHost.Application.Posting;
+using ConsoleGenericHost.Extensions;
+using ConsoleGenericHost.Infrastructure;
 using ConsoleGenericHost.Infrastructure.Posting;
+using ConsoleGenericHost.MessageHandlers;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Options;
 using System;
 using System.IO;
 
@@ -29,9 +33,12 @@ namespace ConsoleGenericHost
                 .AddScoped<IPostingRepository, PostingRepository>(); 
 
                 services.AddOptions<PostingSettings>().Bind(hostContext.Configuration.GetSection(nameof(PostingSettings)));
+                services.AddOptions<BlogClientSettings>().Bind(hostContext.Configuration.GetSection(nameof(BlogClientSettings)));
+                services.AddTransient<AcceptMessageHandler>();
                 services
-                .AddHttpClient<IPostingGateway, PostingGateway>(c =>
-                    c.BaseAddress = new Uri("https://jsonplaceholder.typicode.com/"));
+                .AddHttpClient<IPostingGateway, PostingGateway>()
+                .ConfigureHttpClientWithBlogClientSettings()
+                .AddHttpMessageHandler<AcceptMessageHandler>();
             });
 
     }
