@@ -4,8 +4,8 @@ using System.Threading.Tasks;
 
 namespace ConsoleGenericHost.Application.Posting
 {
-    public interface IPostingRepository
+    public interface IPostingGateway
     {
-        Task<IEnumerable<PostDTO>> GetAllPostsAsync();
+        Task<IEnumerable<PostDTO>> GetAllPosts();
     }
 }

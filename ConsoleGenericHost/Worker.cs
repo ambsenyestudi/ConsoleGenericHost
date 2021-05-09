@@ -1,11 +1,7 @@
-﻿using ConsoleGenericHost.Application;
-using ConsoleGenericHost.CountDown;
+﻿using ConsoleGenericHost.Application.Posting;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -16,20 +12,17 @@ namespace ConsoleGenericHost
         private readonly ILogger logger;
         private readonly IHostApplicationLifetime appLifetime;
         private readonly IPostingRepository postingRepository;
-        private readonly ICountdownService countdownService;
 
-        private int? _exitCode;
+        private int? exitCode;
 
         public Worker(
             ILogger<Worker> logger,
             IHostApplicationLifetime appLifetime,
-            IPostingRepository postingRepository,
-            ICountdownService countdownService)
+            IPostingRepository postingRepository)
         {
             this.logger = logger;
             this.appLifetime = appLifetime;
             this.postingRepository = postingRepository;
-            this.countdownService = countdownService;
         }
 
         public Task StartAsync(CancellationToken cancellationToken)
@@ -42,22 +35,19 @@ namespace ConsoleGenericHost
                 {
                     try
                     {
-                        var posts = await postingRepository.GetAllPosts();
-                        IReadOnlyList<int> countdownList = await countdownService.GenerateCountdownAsync();
-                        for (int i = 0; i < countdownList.Count; i++)
+                        var posts = await postingRepository.GetAllPostsAsync();
+                        foreach (var item in posts)
                         {
-                            var currentNumber = countdownList[i];
-
-                            logger.LogInformation($"{currentNumber} seconds reminder");
-                            await Task.Delay(1000);
+                            var printalbePost = $"id: {item.id} title:{item.title} userId:{item.userId}";
+                            logger.LogInformation(printalbePost);
+                            await Task.Delay(20);
                         }
-
-                        _exitCode = 0;
+                        exitCode = 0;
                     }
                     catch (Exception ex)
                     {
                         logger.LogError(ex, "Unhandled exception!");
-                        _exitCode = 1;
+                        exitCode = 1;
                     }
                     finally
                     {
@@ -72,10 +62,10 @@ namespace ConsoleGenericHost
 
         public Task StopAsync(CancellationToken cancellationToken)
         {
-            logger.LogDebug($"Exiting with return code: {_exitCode}");
+            logger.LogDebug($"Exiting with return code: {exitCode}");
 
             // Exit code may be null if the user cancelled via Ctrl+C/SIGTERM
-            Environment.ExitCode = _exitCode.GetValueOrDefault(-1);
+            Environment.ExitCode = exitCode.GetValueOrDefault(-1);
             return Task.CompletedTask;
         }
     }

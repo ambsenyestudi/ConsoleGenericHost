@@ -1,9 +1,8 @@
-﻿using ConsoleGenericHost.Application;
-using ConsoleGenericHost.CountDown;
-using ConsoleGenericHost.Infrastructure;
-using Microsoft.Extensions.Configuration;
+﻿using ConsoleGenericHost.Application.Posting;
+using ConsoleGenericHost.Infrastructure.Posting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using System;
 using System.IO;
 
 namespace ConsoleGenericHost
@@ -24,12 +23,15 @@ namespace ConsoleGenericHost
             })
             .ConfigureServices((hostContext, services) =>
             {
+                
                 services
                 .AddHostedService<Worker>()
-                .AddSingleton<ICountdownService, CountdownService>()
-                .AddScoped<IPostingRepository, PostingRepository>(); ;
+                .AddScoped<IPostingRepository, PostingRepository>(); 
 
-                services.AddOptions<CountdownSettings>().Bind(hostContext.Configuration.GetSection(nameof(CountdownSettings)));
+                services.AddOptions<PostingSettings>().Bind(hostContext.Configuration.GetSection(nameof(PostingSettings)));
+                services
+                .AddHttpClient<IPostingGateway, PostingGateway>(c =>
+                    c.BaseAddress = new Uri("https://jsonplaceholder.typicode.com/"));
             });
 
     }
