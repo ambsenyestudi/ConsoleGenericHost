@@ -1,4 +1,6 @@
-﻿using ConsoleGenericHost.CountDown;
+﻿using ConsoleGenericHost.Application;
+using ConsoleGenericHost.CountDown;
+using ConsoleGenericHost.Infrastructure;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -24,7 +26,8 @@ namespace ConsoleGenericHost
             {
                 services
                 .AddHostedService<Worker>()
-                .AddSingleton<ICountdownService, CountdownService>();
+                .AddSingleton<ICountdownService, CountdownService>()
+                .AddScoped<IPostingRepository, PostingRepository>(); ;
 
                 services.AddOptions<CountdownSettings>().Bind(hostContext.Configuration.GetSection(nameof(CountdownSettings)));
             });

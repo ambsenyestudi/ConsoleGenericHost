@@ -11,6 +11,11 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\ConsoleGenericHost.Application\ConsoleGenericHost.Application.csproj" />
+    <ProjectReference Include="..\ConsoleGenericHost.Infrastructure\ConsoleGenericHost.Infrastructure.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
     <None Update="appsettings.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
