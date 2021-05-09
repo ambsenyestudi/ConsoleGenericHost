@@ -1,6 +1,6 @@
 ﻿namespace ConsoleGenericHost.Infrastructure
 {
-    public class BlogClientSettings
+    public class BlogClientSettings: IBaseUrl
     {
         public string BaseUrl { get; set; }
     }

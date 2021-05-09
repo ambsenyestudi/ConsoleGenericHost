@@ -37,7 +37,7 @@ namespace ConsoleGenericHost
                 services.AddTransient<AcceptMessageHandler>();
                 services
                 .AddHttpClient<IPostingGateway, PostingGateway>()
-                .ConfigureHttpClientWithBlogClientSettings()
+                .ConfigureHttpclientWithBaseUrl<BlogClientSettings>()
                 .AddHttpMessageHandler<AcceptMessageHandler>();
             });
 
