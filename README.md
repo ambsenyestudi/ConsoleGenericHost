@@ -7,3 +7,7 @@ Create a Console app that performs a set of asynchronos tasks an then die using 
 ## Great example on dotnet 5 to base your develoment on is
 
 [dfederm's GenericHostConsoleApp](https://github.com/dfederm/GenericHostConsoleApp)
+
+## Articles on configuring httpclientfactory
+
+[optimally-configuring-asp-net-core-httpclientfactory](https://rehansaeed.com/optimally-configuring-asp-net-core-httpclientfactory/)
